@@ -1,0 +1,43 @@
+.books_header {
+  max-width: fit-content;
+  margin-inline: auto;
+}
+
+.books_table {
+  max-width: fit-content;
+  margin: 3rem auto;
+  border: 2px solid black;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0.5rem;
+}
+.books_table td,
+.books_table th {
+  padding: 0.5rem;
+  text-align: center;
+}
+.books_table th {
+  border-bottom: 2px solid black;
+}
+.books_table .td_name {
+  text-align: left;
+}
+.books_table .book_edit_btn {
+  max-width: fit-content;
+  color: white;
+  padding: 0.5rem 0.8rem;
+  border-radius: 0.2rem;
+  border: none;
+  background-color: rgb(32, 138, 209);
+}
+.books_table .book_edit_btn:hover {
+  background-color: rgb(18, 85, 161);
+  box-shadow: 0 0 0px 3px rgb(211, 211, 211);
+}
+
+.table_book_cover {
+  width: 50px;
+  object-fit: cover;
+}
+
+/*# sourceMappingURL=index.css.map */
