@@ -24,7 +24,9 @@ $config = [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'app\models\User',
+            'identityClass' => 'app\models\Users',
+            'enableSession' => false,
+            'loginUrl' => null,
             'enableAutoLogin' => true,
         ],
         'errorHandler' => [
@@ -56,9 +58,14 @@ $config = [
                 'api/books/<id:\d+>' => 'book-api/getbookbyid',/*fetch book by id*/
                 'api/books/add' => 'book-api/create',/*create a new book*/
                 'api/books/update/<id:\d+>' => 'book-api/updatebook', /* update book by id*/
-                'api/books/delete/<id:\d+>' => 'book-api/deletebook' /* delete book */
+                'api/books/delete/<id:\d+>' => 'book-api/deletebook', /* delete book */
+                'api/auth/signup/admin' => 'admin-auth/signup',
+                'api/auth/login/admin' => 'admin-auth/login'
             ],
         ],
+        'authManager' => [
+            'class' => 'yii\rbac\DbManager'
+        ]
     ],
     'params' => $params,
 ];

@@ -6,9 +6,20 @@ use Yii;
 use yii\db\Query;
 use yii\rest\Controller;
 use app\models\Books;
+use yii\filters\auth\HttpBearerAuth;
+
 
 class BookApiController extends Controller
 {
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['authenticator'] = [
+            'class' => HttpBearerAuth::class,
+        ];
+        return $behaviors;
+    }
 
     // --------------------get all books-----------------
 
