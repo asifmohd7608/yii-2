@@ -23,9 +23,17 @@ use Yii;
  *
  * @property Categories $categoryType
  * @property Purchases[] $purchases
+ * 
  */
 class Books extends \yii\db\ActiveRecord
+
+
 {
+    /**
+     * @var UploadedFile
+     */
+
+    public $image;
     /**
      * {@inheritdoc}
      */
@@ -40,15 +48,31 @@ class Books extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['ISBN', 'Book_Title', 'Author', 'Publication_Year', 'Language', 'No_Of_Copies_Actual', 'No_Of_Copies_Current',
-             'Available', 'Price', 'Status'], 'required'],
-            [['Publication_Year'], 'safe'],
+            [[
+                'ISBN', 'Book_Title', 'Author', 'Publication_Year', 'Language', 'No_Of_Copies_Actual', 'No_Of_Copies_Current',
+                'Available', 'Price', 'Status', 'Category_Type', 'image'
+            ], 'required'],
+            [['Publication_Year'], 'date', 'format' => 'y-m-d'],
             [['No_Of_Copies_Actual', 'No_Of_Copies_Current', 'Available', 'Price', 'Category_Type', 'Status'], 'integer'],
             [['ISBN', 'Book_Title', 'Author', 'Language', 'File_Path'], 'string', 'max' => 255],
-            [['Category_Type'], 'exist', 'skipOnError' => true, 'targetClass' => Categories::class,
-             'targetAttribute' => ['Category_Type' => 'id']],
+            [
+                ['Category_Type'], 'exist', 'targetClass' => Categories::class,
+                'targetAttribute' => ['Category_Type' => 'id']
+            ],
+            [['image'], 'file', 'skipOnEmpty' => false]
+
         ];
     }
+    public function upload()
+    {
+        if ($this->validate()) {
+            $this->image->saveAs('web/uploads/books/images' . $this->imageFile->baseName . '.' . $this->imageFile->extension);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     /**
      * {@inheritdoc}

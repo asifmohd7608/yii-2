@@ -59,13 +59,16 @@ $config = [
                 'api/books/add' => 'book-api/create',/*create a new book*/
                 'api/books/update/<id:\d+>' => 'book-api/updatebook', /* update book by id*/
                 'api/books/delete/<id:\d+>' => 'book-api/deletebook', /* delete book */
-                'api/auth/signup/admin' => 'admin-auth/signup',
-                'api/auth/login/admin' => 'admin-auth/login'
+                'api/auth/signup/admin' => 'auth/signup',
+                'api/auth/login/admin' => 'auth/login',
+                'api/auth/signup/user' => 'auth/usersignup',
+                'api/auth/login/user' => 'auth/userlogin',
+
             ],
         ],
         'authManager' => [
-            'class' => 'yii\rbac\DbManager'
-        ]
+            'class' => 'yii\rbac\DbManager',
+        ],
     ],
     'params' => $params,
 ];

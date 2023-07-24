@@ -6,7 +6,11 @@ use Yii;
 use yii\db\Query;
 use yii\rest\Controller;
 use app\models\Books;
+use app\models\ImageModel;
+use yii\filters\AccessControl;
 use yii\filters\auth\HttpBearerAuth;
+use yii\filters\VerbFilter;
+use yii\web\UploadedFile;
 
 
 class BookApiController extends Controller
@@ -14,10 +18,38 @@ class BookApiController extends Controller
 
     public function behaviors()
     {
+
         $behaviors = parent::behaviors();
         $behaviors['authenticator'] = [
             'class' => HttpBearerAuth::class,
         ];
+        $behaviors['access'] = [
+            'class' => AccessControl::class,
+            'rules' => [
+                [
+                    'allow' => true,
+                    'actions' => ['index', 'getbookbyid'],
+                    'roles' => ['manageBook', 'userPermissions']
+                ],
+                [
+                    'allow' => true,
+                    'actions' => ['create', 'updatebook', 'deletebook'],
+                    'roles' => ['manageBook']
+                ]
+            ]
+        ];
+        $behaviors['verbs'] = [
+            'class' => VerbFilter::class,
+            'actions' => [
+                'index'  => ['GET'],
+                'getbookbyid' => ['GET'],
+                'create' => ['POST'],
+                'updatebook' => ['POST'],
+                'deletebook' => ['DELETE'],
+            ]
+        ];
+
+
         return $behaviors;
     }
 
@@ -27,14 +59,10 @@ class BookApiController extends Controller
     public function actionIndex()
     {
         $request = yii::$app->getRequest();
-        if ($request->isGet) {
-            $query = new Query();
-            $query->select('*')->from('books');
-            $books = $query->all();
-            return $this->asJson(['success' => true, 'data' => $books]);
-        } else {
-            return $this->asJson(['success' => false, 'message' => 'invalid method']);
-        }
+        $query = new Query();
+        $query->select('*')->from('books');
+        $books = $query->all();
+        return $this->asJson(['success' => true, 'data' => $books]);
     }
 
     // ----------------------get book by id------------------
@@ -42,22 +70,18 @@ class BookApiController extends Controller
     public function actionGetbookbyid($id)
     {
         $request = yii::$app->getRequest();
-        if ($request->isGet) {
-            $query = new Query();
-            $query->select(['books.*', 'Categories.category_name'])
-                ->from('books')
-                ->where("books.id=:id", [':id' => $id])
-                ->leftJoin('Categories', 'books.Category_Type = Categories.id');
-            $reqBook = $query->all();
-            if (
-                count($reqBook) > 0
-            ) {
-                return $this->asJson(['success' => true, 'data' => $reqBook]);
-            } else {
-                return $this->asJson(['success' => false, 'message' => 'invalid book id']);
-            }
+        $query = new Query();
+        $query->select(['books.*', 'Categories.category_name'])
+            ->from('books')
+            ->where("books.id=:id", [':id' => $id])
+            ->leftJoin('Categories', 'books.Category_Type = Categories.id');
+        $reqBook = $query->all();
+        if (
+            count($reqBook) > 0
+        ) {
+            return $this->asJson(['success' => true, 'data' => $reqBook]);
         } else {
-            return $this->asJson(['success' => false, 'message' => 'invalid method']);
+            return $this->asJson(['success' => false, 'message' => 'invalid book id']);
         }
     }
     // -----------------add new book--------------------
@@ -65,20 +89,24 @@ class BookApiController extends Controller
     public function actionCreate()
     {
         $book = new Books();
+
+
+
         $request = yii::$app->getRequest();
         $book->load($request->post(), '');
-        if ($request->isPost) {
-            if ($book->validate()) {
-                if ($book->save()) {
-                    return $this->asJson((['success' => true, 'message' => 'sucessfully added book to db']));
-                } else {
-                    return $this->asJson(['success' => false, 'message' => 'unable to add book to db']);
-                }
+        if ($book->validate()) {
+            $book->image = UploadedFile::getInstance($book, 'image');
+            if ($book->upload()) {
+                $filePath = 'path/to/upload/directory/' . $book->image->baseName . '.' . $book->image->extension;
+                $book->File_Path = $filePath;
+            }
+            if ($book->save()) {
+                return $this->asJson((['success' => true, 'message' => 'sucessfully added book to db']));
             } else {
-                return $this->asJson(['success' => false, 'error' => $book->errors]);
+                return $this->asJson(['success' => false, 'message' => 'unable to add book to db']);
             }
         } else {
-            return $this->asJson(['success' => false, 'message' => 'invalid method']);
+            return $this->asJson(['success' => false, 'error' => $book->errors]);
         }
     }
 
@@ -88,35 +116,27 @@ class BookApiController extends Controller
     {
         $book = Books::findOne($id);
         $request = yii::$app->getRequest();
-        if ($request->isPost) {
-            $updateData = $request->post();
-            $book->attributes = $updateData;
-            if ($book->save()) {
-                return $this->asJson(['success' => true, 'message' => 'successfully updated the data']);
-            } else {
-                return $this->asJson(['success' => false, 'message' => 'unable to update the data']);
-            }
+        $updateData = $request->post();
+        $book->attributes = $updateData;
+        if ($book->save()) {
+            return $this->asJson(['success' => true, 'message' => 'successfully updated the data']);
         } else {
-            return $this->asJson(['success' => false, 'message' => 'invalid method']);
+            return $this->asJson(['success' => false, 'message' => 'unable to update the data']);
         }
     }
 
     public function actionDeletebook($id)
     {
         $request = yii::$app->getRequest();
-        if ($request->isDelete) {
-            $book = Books::findOne($id);
-            if ($book) {
-                if ($book->delete()) {
-                    return $this->asJson(['success' => true, 'data' => $book, 'message' => 'successfully deleted book']);
-                } else {
-                    return $this->asJson(['success' => false, 'message' => 'unable to delete the book']);
-                }
+        $book = Books::findOne($id);
+        if ($book) {
+            if ($book->delete()) {
+                return $this->asJson(['success' => true, 'data' => $book, 'message' => 'successfully deleted book']);
             } else {
-                return $this->asJson(['success' => false, 'message' => "couldn't find book with id $id"]);
+                return $this->asJson(['success' => false, 'message' => 'unable to delete the book']);
             }
         } else {
-            return $this->asJson(['success' => 'false', 'message' => 'invalid method']);
+            return $this->asJson(['success' => false, 'message' => "couldn't find book with id $id"]);
         }
     }
 }
