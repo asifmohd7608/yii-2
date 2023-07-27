@@ -10,9 +10,17 @@ use app\models\LoginModel;
 
 class AuthController extends Controller
 {
+
     public function behaviors()
     {
         $behaviors = parent::behaviors();
+
+        // $auth = $behaviors['authenticator'];
+        // unset($behaviors['authenticator']);
+
+        $behaviors['corsFilter'] = [
+            'class' => \yii\filters\Cors::class,
+        ];
 
         $behaviors['verbs'] = [
             'class' => VerbFilter::class,
@@ -40,10 +48,10 @@ class AuthController extends Controller
             $auth = Yii::$app->authManager;
             $adminRole = $auth->getRole('admin');
             $auth->assign($adminRole, $newAdmin->getId());
-            return $this->asJson(['success' => true, 'mesage' => 'successfully registered user']);
+            return $this->asJson(['success' => true, 'successMesage' => 'successfully registered user', 'user' => ['name' => $newAdmin->First_Name, 'Token' => $newAdmin->access_token, "Role" => 'admin']]);
         } else {
             return $this->asJson([
-                'success' => false, 'message' => 'unable to register the user',
+                'success' => false, 'errorMessage' => 'unable to register the user',
                 'error' => $newAdmin->errors
             ]);
         }
@@ -95,10 +103,10 @@ class AuthController extends Controller
             $auth = yii::$app->authManager;
             $userRole = $auth->getRole('user');
             $auth->assign($userRole, $newUser->getId());
-            return $this->asJson(['success' => true, 'mesage' => 'successfully registered user']);
+            return $this->asJson(['success' => true, 'successMesage' => 'successfully registered user', 'user' => ['name' => $newUser->First_Name, 'Token' => $newUser->access_token, "Role" => 'user']]);
         } else {
             return $this->asJson([
-                'success' => false, 'message' => 'unable to register the user',
+                'success' => false, 'errorMessage' => 'unable to register the user',
                 'error' => $newUser->errors
             ]);
         }
@@ -119,15 +127,18 @@ class AuthController extends Controller
                     $user->access_token = yii::$app->security->generateRandomString(16);
                     $user->save();
                     return $this->asJson([
-                        'success' => true, 'message' => 'successfully logged in',
+                        'success' => true, 'successMessage' => 'successfully logged in',
                         'user' => [
                             'user_id' => $user['id'], 'Email' => $user['Email'],
-                            'Token' => $user->access_token
+                            'Token' => $user->access_token,
+                            'Role' => $user['role']
                         ]
                     ]);
+                } else {
+                    return $this->asJson(['success' => false, 'errMessage' => 'Either password or username is incorrect']);
                 }
             } else {
-                return $this->asJson(['success' => false, 'message' => 'Either password or username is incorrect']);
+                return $this->asJson(['success' => false, 'errMessage' => 'Either password or username is incorrect']);
             }
         }
     }

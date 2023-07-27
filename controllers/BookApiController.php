@@ -6,11 +6,13 @@ use Yii;
 use yii\db\Query;
 use yii\rest\Controller;
 use app\models\Books;
-use app\models\ImageModel;
 use yii\filters\AccessControl;
 use yii\filters\auth\HttpBearerAuth;
 use yii\filters\VerbFilter;
+use app\models\ImageUploadForm;
 use yii\web\UploadedFile;
+
+
 
 
 class BookApiController extends Controller
@@ -20,24 +22,35 @@ class BookApiController extends Controller
     {
 
         $behaviors = parent::behaviors();
-        $behaviors['authenticator'] = [
-            'class' => HttpBearerAuth::class,
+
+
+        // remove authentication filter
+        $auth = $behaviors['authenticator'];
+        unset($behaviors['authenticator']);
+
+        // add CORS filter
+        $behaviors['corsFilter'] = [
+            'class' => \yii\filters\Cors::class,
         ];
-        $behaviors['access'] = [
-            'class' => AccessControl::class,
-            'rules' => [
-                [
-                    'allow' => true,
-                    'actions' => ['index', 'getbookbyid'],
-                    'roles' => ['manageBook', 'userPermissions']
-                ],
-                [
-                    'allow' => true,
-                    'actions' => ['create', 'updatebook', 'deletebook'],
-                    'roles' => ['manageBook']
-                ]
-            ]
-        ];
+        // $behaviors['authenticator'] = [
+        //     'class' => HttpBearerAuth::class,
+        // ];
+        // $behaviors['access'] = [
+        //     'class' => AccessControl::class,
+        //     'rules' => [
+        //         [
+        //             'allow' => true,
+        //             'actions' => ['index', 'getbookbyid'],
+        //             'roles' => ['manageBook', 'userPermissions']
+        //         ],
+        //         [
+        //             'allow' => true,
+        //             'actions' => ['create', 'updatebook', 'deletebook'],
+        //             'roles' => ['manageBook']
+        //         ]
+        //     ]
+        // ];
+
         $behaviors['verbs'] = [
             'class' => VerbFilter::class,
             'actions' => [
@@ -46,6 +59,7 @@ class BookApiController extends Controller
                 'create' => ['POST'],
                 'updatebook' => ['POST'],
                 'deletebook' => ['DELETE'],
+                'getcategories' => ['GET']
             ]
         ];
 
@@ -60,7 +74,9 @@ class BookApiController extends Controller
     {
         $request = yii::$app->getRequest();
         $query = new Query();
-        $query->select('*')->from('books');
+        $query->select(['books.*', 'Categories.category_name AS Category_Type'])
+            ->from('books')
+            ->leftJoin('Categories', 'books.Category_Type = Categories.id');
         $books = $query->all();
         return $this->asJson(['success' => true, 'data' => $books]);
     }
@@ -71,7 +87,7 @@ class BookApiController extends Controller
     {
         $request = yii::$app->getRequest();
         $query = new Query();
-        $query->select(['books.*', 'Categories.category_name'])
+        $query->select(['books.*', 'Categories.category_name AS Category_Type'])
             ->from('books')
             ->where("books.id=:id", [':id' => $id])
             ->leftJoin('Categories', 'books.Category_Type = Categories.id');
@@ -91,19 +107,27 @@ class BookApiController extends Controller
         $book = new Books();
 
 
+        $model = new ImageUploadForm();
+
+        $model->imageFile = UploadedFile::getInstanceByName('imageFile');
 
         $request = yii::$app->getRequest();
+        $params = $request->getBodyParams();
         $book->load($request->post(), '');
+
+        if ($model->upload()) {
+            $book->File_Path = $model->getImageUrl();
+        } else {
+            $book->validate();
+            return ['status' => 'error', 'errors' => [...$model->getErrors(), ...$book->errors], 'data' => $params];
+        }
+
         if ($book->validate()) {
-            $book->image = UploadedFile::getInstance($book, 'image');
-            if ($book->upload()) {
-                $filePath = 'path/to/upload/directory/' . $book->image->baseName . '.' . $book->image->extension;
-                $book->File_Path = $filePath;
-            }
             if ($book->save()) {
                 return $this->asJson((['success' => true, 'message' => 'sucessfully added book to db']));
             } else {
-                return $this->asJson(['success' => false, 'message' => 'unable to add book to db']);
+
+                return $this->asJson(['success' => false, 'message' => 'unable to add book to db', 'error' => $book->errors]);
             }
         } else {
             return $this->asJson(['success' => false, 'error' => $book->errors]);
@@ -138,5 +162,17 @@ class BookApiController extends Controller
         } else {
             return $this->asJson(['success' => false, 'message' => "couldn't find book with id $id"]);
         }
+    }
+
+    public function actionGetcategories()
+    {
+        $query = new Query();
+        $query->select('*')->from('categories');
+        $categories = $query->all();
+        return $this->asJson(['success' => true, 'data' => $categories]);
+    }
+
+    public function actionGetrole()
+    {
     }
 }

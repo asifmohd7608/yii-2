@@ -18,7 +18,7 @@ use Yii;
  * @property int $Available
  * @property int $Price
  * @property int|null $Category_Type
- * @property string|null $File_Path
+ * 
  * @property int $Status
  *
  * @property Categories $categoryType
@@ -32,8 +32,6 @@ class Books extends \yii\db\ActiveRecord
     /**
      * @var UploadedFile
      */
-
-    public $image;
     /**
      * {@inheritdoc}
      */
@@ -50,7 +48,7 @@ class Books extends \yii\db\ActiveRecord
         return [
             [[
                 'ISBN', 'Book_Title', 'Author', 'Publication_Year', 'Language', 'No_Of_Copies_Actual', 'No_Of_Copies_Current',
-                'Available', 'Price', 'Status', 'Category_Type', 'image'
+                'Available', 'Price', 'Status', 'Category_Type', 'File_Path'
             ], 'required'],
             [['Publication_Year'], 'date', 'format' => 'y-m-d'],
             [['No_Of_Copies_Actual', 'No_Of_Copies_Current', 'Available', 'Price', 'Category_Type', 'Status'], 'integer'],
@@ -59,19 +57,10 @@ class Books extends \yii\db\ActiveRecord
                 ['Category_Type'], 'exist', 'targetClass' => Categories::class,
                 'targetAttribute' => ['Category_Type' => 'id']
             ],
-            [['image'], 'file', 'skipOnEmpty' => false]
 
         ];
     }
-    public function upload()
-    {
-        if ($this->validate()) {
-            $this->image->saveAs('web/uploads/books/images' . $this->imageFile->baseName . '.' . $this->imageFile->extension);
-            return true;
-        } else {
-            return false;
-        }
-    }
+
 
 
     /**
