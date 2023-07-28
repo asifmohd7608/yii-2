@@ -61,11 +61,12 @@ $config = [
                 'api/books/add' => 'book-api/create',/*create a new book*/
                 'api/books/update/<id:\d+>' => 'book-api/updatebook', /* update book by id*/
                 'api/books/delete/<id:\d+>' => 'book-api/deletebook', /* delete book */
+                'api/books/changestatus' => 'book-api/changebookstatus', 
                 'api/auth/signup/admin' => 'auth/signup',
                 'api/auth/login/admin' => 'auth/login',
                 'api/auth/signup/user' => 'auth/usersignup',
                 'api/auth/login/user' => 'auth/userlogin',
-                'api/auth/getrole' => 'auth/getrole',
+                'api/auth/status' => 'book-api/status',
             ],
         ],
         'authManager' => [

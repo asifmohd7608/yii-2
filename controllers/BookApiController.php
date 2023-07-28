@@ -11,6 +11,7 @@ use yii\filters\auth\HttpBearerAuth;
 use yii\filters\VerbFilter;
 use app\models\ImageUploadForm;
 use yii\web\UploadedFile;
+use app\models\Users;
 
 
 
@@ -32,24 +33,24 @@ class BookApiController extends Controller
         $behaviors['corsFilter'] = [
             'class' => \yii\filters\Cors::class,
         ];
-        // $behaviors['authenticator'] = [
-        //     'class' => HttpBearerAuth::class,
-        // ];
-        // $behaviors['access'] = [
-        //     'class' => AccessControl::class,
-        //     'rules' => [
-        //         [
-        //             'allow' => true,
-        //             'actions' => ['index', 'getbookbyid'],
-        //             'roles' => ['manageBook', 'userPermissions']
-        //         ],
-        //         [
-        //             'allow' => true,
-        //             'actions' => ['create', 'updatebook', 'deletebook'],
-        //             'roles' => ['manageBook']
-        //         ]
-        //     ]
-        // ];
+        $behaviors['authenticator'] = [
+            'class' => HttpBearerAuth::class,
+        ];
+        $behaviors['access'] = [
+            'class' => AccessControl::class,
+            'rules' => [
+                [
+                    'allow' => true,
+                    'actions' => ['index', 'getbookbyid', 'status'],
+                    'roles' => ['admin', 'user']
+                ],
+                [
+                    'allow' => true,
+                    'actions' => ['create', 'updatebook', 'deletebook', 'status', 'getcategories','changebookstatus'],
+                    'roles' => ['admin']
+                ]
+            ]
+        ];
 
         $behaviors['verbs'] = [
             'class' => VerbFilter::class,
@@ -87,14 +88,19 @@ class BookApiController extends Controller
     {
         $request = yii::$app->getRequest();
         $query = new Query();
-        $query->select(['books.*', 'Categories.category_name AS Category_Type'])
-            ->from('books')
-            ->where("books.id=:id", [':id' => $id])
-            ->leftJoin('Categories', 'books.Category_Type = Categories.id');
-        $reqBook = $query->all();
-        if (
-            count($reqBook) > 0
-        ) {
+        // $query->select(['books.*', 'Categories.category_name AS Category_Type'])
+        //     ->from('books')
+        //     ->where("books.id=:id", [':id' => $id])
+        //     ->leftJoin('Categories', 'books.Category_Type = Categories.id');
+
+        //   $query->select('*')
+        //     ->from('books')
+        //     ->where("books.id=:id", [':id' => $id]);
+
+        // $reqBook = $query->all();
+        $reqBook=Books::findOne($id);
+        // if (count($reqBook) > 0) {
+            if($reqBook){
             return $this->asJson(['success' => true, 'data' => $reqBook]);
         } else {
             return $this->asJson(['success' => false, 'message' => 'invalid book id']);
@@ -172,7 +178,26 @@ class BookApiController extends Controller
         return $this->asJson(['success' => true, 'data' => $categories]);
     }
 
-    public function actionGetrole()
+    public function actionChangebookstatus(){
+        $query=new Query();
+        $params=yii::$app->request->getBodyParams();
+        $book = Books::findOne($params['id']);
+        if($book->Status==0){
+            $book->Status=1;
+        }else{
+            $book->Status=0;
+        }
+        if($book->save()){
+            return $this->asJson(['success'=>true,'successMessage'=> 'changed status to'.$book->Status,'data'=>['id'=>$params['id'],'status'=>$book->Status]]);
+        }else{
+            return $this->asJson(['success'=>false,'errorMessage'=>'unable to change status at the moment']);
+        }
+    }
+
+    public function actionStatus()
     {
+        $userData = yii::$app->user->identity;
+        $data = ['Token' => $userData->access_token, 'Role' => $userData->role];
+        return $this->asJson(['success' => true, 'data' => $data]);
     }
 }
