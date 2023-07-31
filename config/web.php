@@ -67,6 +67,13 @@ $config = [
                 'api/auth/signup/user' => 'auth/usersignup',
                 'api/auth/login/user' => 'auth/userlogin',
                 'api/auth/status' => 'book-api/status',
+
+                // ---------------userapi-------------
+
+                'api/user/addtocart'=>'user-api/addtocart',
+                'api/user/getcart'=>'user-api/sendcart',
+                'api/user/cart/removeitem'=>'user-api/removeitem',
+                'api/user/cart/delete'=>'user-api/deletecart',
             ],
         ],
         'authManager' => [

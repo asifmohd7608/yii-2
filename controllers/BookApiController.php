@@ -111,10 +111,7 @@ class BookApiController extends Controller
     public function actionCreate()
     {
         $book = new Books();
-
-
         $model = new ImageUploadForm();
-
         $model->imageFile = UploadedFile::getInstanceByName('imageFile');
 
         $request = yii::$app->getRequest();
@@ -123,10 +120,11 @@ class BookApiController extends Controller
 
         if ($model->upload()) {
             $book->File_Path = $model->getImageUrl();
-        } else {
-            $book->validate();
-            return ['status' => 'error', 'errors' => [...$model->getErrors(), ...$book->errors], 'data' => $params];
         }
+        //  else {
+        //     $book->validate();
+        //     return ['status' => 'error', 'errors' => [...$model->getErrors(), ...$book->errors], 'data' => $params];
+        // }
 
         if ($book->validate()) {
             if ($book->save()) {
@@ -146,12 +144,26 @@ class BookApiController extends Controller
     {
         $book = Books::findOne($id);
         $request = yii::$app->getRequest();
+
         $updateData = $request->post();
         $book->attributes = $updateData;
-        if ($book->save()) {
-            return $this->asJson(['success' => true, 'message' => 'successfully updated the data']);
+
+
+        $model = new ImageUploadForm();
+        $model->imageFile = UploadedFile::getInstanceByName('imageFile');
+        if($model->imageFile){
+            if ($model->upload()) {
+            unlink($book->File_Path);
+            $book->File_Path = $model->getImageUrl();
+
+            }else {
+            return $this->asJson(['success' => false, 'errorMessage' => 'unable to update the data','error'=>$model->errors]);
+        }
+        }
+        if ($book->validate() && $book->save()) {
+            return $this->asJson(['success' => true, 'successMessage' => 'successfully updated the data','req'=>$request->post()]);
         } else {
-            return $this->asJson(['success' => false, 'message' => 'unable to update the data']);
+            return $this->asJson(['success' => false, 'errorMessage' => 'unable to update the data','error'=>$model->errors]);
         }
     }
 
@@ -179,7 +191,6 @@ class BookApiController extends Controller
     }
 
     public function actionChangebookstatus(){
-        $query=new Query();
         $params=yii::$app->request->getBodyParams();
         $book = Books::findOne($params['id']);
         if($book->Status==0){
@@ -190,7 +201,7 @@ class BookApiController extends Controller
         if($book->save()){
             return $this->asJson(['success'=>true,'successMessage'=> 'changed status to'.$book->Status,'data'=>['id'=>$params['id'],'status'=>$book->Status]]);
         }else{
-            return $this->asJson(['success'=>false,'errorMessage'=>'unable to change status at the moment']);
+            return $this->asJson(['success'=>false,'errorMessage'=>'unable to change status at the moment','book'=>$book]);
         }
     }
 
