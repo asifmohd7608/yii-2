@@ -32,7 +32,7 @@ class UserApiController extends Controller
             'rules' => [
                 [
                     'allow' => true,
-                    'actions'=>['addtocart','sendcart','removeitem'],
+                    'actions'=>['addtocart','sendcart','removeitem','deletecart'],
                     'roles' => ['user']
                 ],
             ]
@@ -106,11 +106,12 @@ class UserApiController extends Controller
         }
     }
     public function actionDeletecart(){
-         $user=yii::$app->user->identity;
-        $params=yii::$app->request->getBodyParams();
+        $user=yii::$app->user->identity;
         $userId=$user['id'];
-        $bookId=$params['id'];
-      
-        $cartItem = Cart::findOne(['User_Id' => $userId, 'Book_Id' => $bookId]);
+        $cart = Cart::findAll(['User_Id' => $userId]);
+        foreach($cart as $cartItem){
+            $cartItem->delete();
+        }
+        return $this->asJson(['success'=>true,'successMessage'=>'successfully deleted cart']);
     }
 }

@@ -74,6 +74,11 @@ $config = [
                 'api/user/getcart'=>'user-api/sendcart',
                 'api/user/cart/removeitem'=>'user-api/removeitem',
                 'api/user/cart/delete'=>'user-api/deletecart',
+
+                // -----------------coupon---------------
+                'api/coupons/create'=>'coupon-api/createcoupon',
+                'api/coupons/categories'=>'coupon-api/getcategories',
+
             ],
         ],
         'authManager' => [
