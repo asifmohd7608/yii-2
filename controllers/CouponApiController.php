@@ -31,7 +31,7 @@ class CouponApiController extends Controller{
             'rules' => [
                 [
                     'allow' => true,
-                    'actions'=>['createcoupon','getcategories'],
+                    'actions'=>['createcoupon','getcategories','fetchcoupons','fetchcouponbyid','updatecoupon'],
                     'roles' => ['admin']
                 ],
             ]
@@ -74,6 +74,50 @@ class CouponApiController extends Controller{
         $query->select('*')->from('categories');
         $categories = $query->all();
         return $this->asJson(['success' => true, 'data' => $categories]);
+    }
+
+    public function actionFetchcoupons()
+    {
+        $query = new Query();
+        $query->select(['Yiicoupons.*','categories.category_name AS Coupon_Category'])->from('Yiicoupons')->leftJoin('Categories','Yiicoupons.Coupon_Category=Categories.id');
+        $Coupons = $query->all();
+        return $this->asJson(['success' => true, 'data' => $Coupons]);
+    }
+
+
+    public function actionFetchcouponbyid($id)
+    {
+        $query = new Query();
+        $coupon=Yiicoupons::findOne($id);
+        return $this->asJson(['success' => true, 'data' => $coupon]);
+    }
+
+
+    public function actionUpdatecoupon($id){
+
+        $coupon = Yiicoupons::findOne($id);
+        $request = yii::$app->getRequest();
+
+        $updateData = $request->post();
+        $coupon->attributes = $updateData;
+
+
+        $model = new CouponImageUploadForm();
+        $model->imageFile = UploadedFile::getInstanceByName('ImageFile');
+        if($model->imageFile){
+            if ($model->upload()) {
+            unlink($coupon->Image_Path);
+            $coupon->Image_Path = $model->getImageUrl();
+
+            }else {
+            return $this->asJson(['success' => false, 'errorMessage' => 'unable to update the coupon','error'=>$model->errors]);
+        }
+        }
+        if ($coupon->validate() && $coupon->save()) {
+            return $this->asJson(['success' => true, 'successMessage' => 'successfully updated the coupon']);
+        } else {
+            return $this->asJson(['success' => false, 'errorMessage' => 'unable to update the coupon','error'=>$model->errors]);
+        }
     }
     
 }

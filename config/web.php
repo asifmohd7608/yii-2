@@ -76,6 +76,9 @@ $config = [
                 'api/user/cart/delete'=>'user-api/deletecart',
 
                 // -----------------coupon---------------
+                'api/coupons'=>'coupon-api/fetchcoupons',
+                'api/coupons/edit/<id:\d+>'=>'coupon-api/fetchcouponbyid',
+                'api/coupons/update/<id:\d+>'=>'coupon-api/updatecoupon',
                 'api/coupons/create'=>'coupon-api/createcoupon',
                 'api/coupons/categories'=>'coupon-api/getcategories',
 
