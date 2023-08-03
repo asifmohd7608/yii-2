@@ -1,6 +1,8 @@
 <?php
 namespace app\controllers;
 
+use app\models\Books;
+use app\models\Cart;
 use yii;
 use yii\db\Query;
 use yii\rest\Controller;
@@ -31,9 +33,14 @@ class CouponApiController extends Controller{
             'rules' => [
                 [
                     'allow' => true,
-                    'actions'=>['createcoupon','getcategories','fetchcoupons','fetchcouponbyid','updatecoupon'],
+                    'actions'=>['createcoupon','getcategories','fetchcoupons','fetchcouponbyid','updatecoupon','changecouponstatus'],
                     'roles' => ['admin']
                 ],
+                [
+                    'allow'=>true,
+                    'actions'=>['fetcheligiblecoupons'],
+                    'roles'=>['user']
+                ]
             ]
         ];
 
@@ -83,6 +90,19 @@ class CouponApiController extends Controller{
         $Coupons = $query->all();
         return $this->asJson(['success' => true, 'data' => $Coupons]);
     }
+    public function actionFetcheligiblecoupons()
+    {
+        $params=yii::$app->getRequest()->getBodyParams();
+        $reqBook=Books::findOne($params['id']);
+
+        
+            $query = new Query();
+        $query->select(['Yiicoupons.*','categories.category_name AS Coupon_Category'])->from('Yiicoupons')->Where(['or',['Coupon_Category'=>$reqBook['Category_Type']],['Coupon_Category'=>0]])->leftJoin('Categories','Yiicoupons.Coupon_Category=Categories.id');
+        $Coupons = $query->all();
+        return $this->asJson(['success' => true, 'data' => $Coupons,'book'=>$reqBook]);
+        
+        
+    }
 
 
     public function actionFetchcouponbyid($id)
@@ -119,5 +139,34 @@ class CouponApiController extends Controller{
             return $this->asJson(['success' => false, 'errorMessage' => 'unable to update the coupon','error'=>$model->errors]);
         }
     }
+
+    public function actionChangecouponstatus(){
+        $params=yii::$app->getRequest()->getBodyParams();
+        $reqCoupon=Yiicoupons::findOne($params['id']);
+        if($reqCoupon){
+           if( $reqCoupon['Coupon_Status']==0){
+            $reqCoupon['Coupon_Status']=1;
+           }else{
+            $reqCoupon['Coupon_Status']=0;
+           }
+           $result= $reqCoupon->save();
+            return $this->asJson(['success'=>true,'successMessage'=>'status change success','status'=>$reqCoupon['Coupon_Status'],'result'=>$result,'errors'=>$reqCoupon->errors]);
+        }else{
+            return $this->asJson(['success'=>false,'errorMessage'=>'Unable to find that coupon']);
+        }
+    }
     
 }
+
+
+// $user=yii::$app->user->identity;
+//         $userCart=Cart::findAll(['User_Id'=>$user['id']]);
+//         $couponAlreadyApplied=false;
+//         foreach($userCart as $item){
+//             if($item['Applied_Coupon_Id']){
+//                 $couponAlreadyApplied=true;
+//             }
+//         }
+//         if( $couponAlreadyApplied){
+//             return $this->asJson(['success'=>false,'errorMessage'=>'you have already applied a coupon']);
+//         }

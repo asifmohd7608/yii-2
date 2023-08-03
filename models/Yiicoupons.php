@@ -35,9 +35,9 @@ class Yiicoupons extends \yii\db\ActiveRecord
     {
         return [
             [['Name', 'Code', 'Coupon_Offer', 'Coupon_Type', 'Image_Path', 'Coupon_Status', 'Validity_Start', 'Validity_End', 'Coupon_Category'], 'required'],
-            [['Coupon_Offer'], 'integer'],
+            [['Coupon_Offer','Coupon_Status'], 'integer'],
             [['Validity_Start', 'Validity_End'], 'date', 'format' => 'y-m-d'],
-            [['Name', 'Code', 'Coupon_Type', 'Image_Path', 'Coupon_Status', 'Coupon_Category'], 'string', 'max' => 255],
+            [['Name', 'Code', 'Coupon_Type', 'Image_Path', 'Coupon_Category'], 'string', 'max' => 255],
         ];
     }
 

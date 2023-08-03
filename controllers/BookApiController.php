@@ -41,7 +41,7 @@ class BookApiController extends Controller
             'rules' => [
                 [
                     'allow' => true,
-                    'actions' => ['index', 'getbookbyid', 'status'],
+                    'actions' => ['index', 'getbookbyid', 'status','fetchbooksuser'],
                     'roles' => ['admin', 'user']
                 ],
                 [
@@ -77,6 +77,17 @@ class BookApiController extends Controller
         $query = new Query();
         $query->select(['books.*', 'Categories.category_name AS Category_Type'])
             ->from('books')
+            ->leftJoin('Categories', 'books.Category_Type = Categories.id');
+        $books = $query->all();
+        return $this->asJson(['success' => true, 'data' => $books]);
+    }
+    public function actionFetchbooksuser()
+    {
+        $request = yii::$app->getRequest();
+        $query = new Query();
+        $query->select(['books.*', 'Categories.category_name AS Category_Type'])
+            ->from('books')
+            ->where(['and','Status'=>1,['>','No_Of_Copies_Current',0]])
             ->leftJoin('Categories', 'books.Category_Type = Categories.id');
         $books = $query->all();
         return $this->asJson(['success' => true, 'data' => $books]);
@@ -153,7 +164,7 @@ class BookApiController extends Controller
         $model->imageFile = UploadedFile::getInstanceByName('imageFile');
         if($model->imageFile){
             if ($model->upload()) {
-            unlink($book->File_Path);
+            // unlink($book->File_Path);
             $book->File_Path = $model->getImageUrl();
 
             }else {

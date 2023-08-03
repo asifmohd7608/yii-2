@@ -12,7 +12,7 @@ class CouponImageUploadForm extends Model
     public function rules()
     {
         return [
-            [['imageFile'], 'image', 'skipOnEmpty' => false, 'extensions' => 'png, jpg, jpeg, gif'],
+            [['imageFile'], 'image', 'skipOnEmpty' => false, 'extensions' => 'png, jpg, jpeg, gif, jfif'],
         ];
     }
 
