@@ -24,10 +24,20 @@ class bookForm extends Model
     public function rules()
     {
         return [
-            [[
-                'ISBN', 'Book_Title', 'Author', 'Pulication_year', 'Language', 'No_Of_Copies_Actual', 'No_Of_Copies_Current',
-                'Availabel', 'Price'
-            ], 'required'],
+            [
+                [
+                    'ISBN',
+                    'Book_Title',
+                    'Author',
+                    'Pulication_year',
+                    'Language',
+                    'No_Of_Copies_Actual',
+                    'No_Of_Copies_Current',
+                    'Availabel',
+                    'Price'
+                ],
+                'required'
+            ],
 
         ];
     }

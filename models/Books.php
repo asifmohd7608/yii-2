@@ -22,12 +22,9 @@ use Yii;
  * @property int $Status
  *
  * @property Categories $categoryType
- * @property Purchases[] $purchases
  * 
  */
 class Books extends \yii\db\ActiveRecord
-
-
 {
     /**
      * @var UploadedFile
@@ -46,15 +43,30 @@ class Books extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [[
-                'ISBN', 'Book_Title', 'Author', 'Publication_Year', 'Language', 'No_Of_Copies_Actual', 'No_Of_Copies_Current',
-                'Available', 'Price', 'Status', 'Category_Type', 'File_Path'
-            ], 'required'],
+            [
+                [
+                    'ISBN',
+                    'Book_Title',
+                    'Author',
+                    'Publication_Year',
+                    'Language',
+                    'No_Of_Copies_Actual',
+                    'No_Of_Copies_Current',
+                    'Available',
+                    'Price',
+                    'Status',
+                    'Category_Type',
+                    'File_Path'
+                ],
+                'required'
+            ],
             [['Publication_Year'], 'date', 'format' => 'y-m-d'],
             [['No_Of_Copies_Actual', 'No_Of_Copies_Current', 'Available', 'Price', 'Category_Type', 'Status'], 'integer'],
             [['ISBN', 'Book_Title', 'Author', 'Language', 'File_Path'], 'string', 'max' => 255],
             [
-                ['Category_Type'], 'exist', 'targetClass' => Categories::class,
+                ['Category_Type'],
+                'exist',
+                'targetClass' => Categories::class,
                 'targetAttribute' => ['Category_Type' => 'id']
             ],
 
@@ -100,8 +112,5 @@ class Books extends \yii\db\ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getPurchases()
-    {
-        return $this->hasMany(Purchases::class, ['Book_Id' => 'id']);
-    }
+
 }

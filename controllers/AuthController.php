@@ -51,7 +51,8 @@ class AuthController extends Controller
             return $this->asJson(['success' => true, 'successMesage' => 'successfully registered user', 'user' => ['name' => $newAdmin->First_Name, 'Token' => $newAdmin->access_token, "Role" => 'admin']]);
         } else {
             return $this->asJson([
-                'success' => false, 'errorMessage' => 'unable to register the user',
+                'success' => false,
+                'errorMessage' => 'unable to register the user',
                 'error' => $newAdmin->errors
             ]);
         }
@@ -75,9 +76,11 @@ class AuthController extends Controller
                     $user->access_token = yii::$app->security->generateRandomString(16);
                     $user->save();
                     return $this->asJson([
-                        'success' => true, 'message' => 'successfully logged in',
+                        'success' => true,
+                        'message' => 'successfully logged in',
                         'user' => [
-                            'user_id' => $user['id'], 'Email' => $user['Email'],
+                            'user_id' => $user['id'],
+                            'Email' => $user['Email'],
                             'Token' => $user->access_token
                         ]
                     ]);
@@ -106,7 +109,8 @@ class AuthController extends Controller
             return $this->asJson(['success' => true, 'successMesage' => 'successfully registered user', 'user' => ['name' => $newUser->First_Name, 'Token' => $newUser->access_token, "Role" => 'user']]);
         } else {
             return $this->asJson([
-                'success' => false, 'errorMessage' => 'unable to register the user',
+                'success' => false,
+                'errorMessage' => 'unable to register the user',
                 'error' => $newUser->errors
             ]);
         }
@@ -127,9 +131,11 @@ class AuthController extends Controller
                     $user->access_token = yii::$app->security->generateRandomString(16);
                     $user->save();
                     return $this->asJson([
-                        'success' => true, 'successMessage' => 'successfully logged in',
+                        'success' => true,
+                        'successMessage' => 'successfully logged in',
                         'user' => [
-                            'user_id' => $user['id'], 'Email' => $user['Email'],
+                            'user_id' => $user['id'],
+                            'Email' => $user['Email'],
                             'Token' => $user->access_token,
                             'Role' => $user['role']
                         ]
@@ -142,5 +148,5 @@ class AuthController extends Controller
             }
         }
     }
-    
+
 }

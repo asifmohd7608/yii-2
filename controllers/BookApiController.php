@@ -41,12 +41,12 @@ class BookApiController extends Controller
             'rules' => [
                 [
                     'allow' => true,
-                    'actions' => ['index', 'getbookbyid', 'status','fetchbooksuser'],
+                    'actions' => ['index', 'getbookbyid', 'status', 'fetchbooksuser'],
                     'roles' => ['admin', 'user']
                 ],
                 [
                     'allow' => true,
-                    'actions' => ['create', 'updatebook', 'deletebook', 'status', 'getcategories','changebookstatus'],
+                    'actions' => ['create', 'updatebook', 'deletebook', 'status', 'getcategories', 'changebookstatus'],
                     'roles' => ['admin']
                 ]
             ]
@@ -55,7 +55,7 @@ class BookApiController extends Controller
         $behaviors['verbs'] = [
             'class' => VerbFilter::class,
             'actions' => [
-                'index'  => ['GET'],
+                'index' => ['GET'],
                 'getbookbyid' => ['GET'],
                 'create' => ['POST'],
                 'updatebook' => ['POST'],
@@ -87,7 +87,7 @@ class BookApiController extends Controller
         $query = new Query();
         $query->select(['books.*', 'Categories.category_name AS Category_Type'])
             ->from('books')
-            ->where(['and','Status'=>1,['>','No_Of_Copies_Current',0]])
+            ->where(['and', 'Status' => 1, ['>', 'No_Of_Copies_Current', 0]])
             ->leftJoin('Categories', 'books.Category_Type = Categories.id');
         $books = $query->all();
         return $this->asJson(['success' => true, 'data' => $books]);
@@ -109,9 +109,9 @@ class BookApiController extends Controller
         //     ->where("books.id=:id", [':id' => $id]);
 
         // $reqBook = $query->all();
-        $reqBook=Books::findOne($id);
+        $reqBook = Books::findOne($id);
         // if (count($reqBook) > 0) {
-            if($reqBook){
+        if ($reqBook) {
             return $this->asJson(['success' => true, 'data' => $reqBook]);
         } else {
             return $this->asJson(['success' => false, 'message' => 'invalid book id']);
@@ -132,10 +132,7 @@ class BookApiController extends Controller
         if ($model->upload()) {
             $book->File_Path = $model->getImageUrl();
         }
-        //  else {
-        //     $book->validate();
-        //     return ['status' => 'error', 'errors' => [...$model->getErrors(), ...$book->errors], 'data' => $params];
-        // }
+
 
         if ($book->validate()) {
             if ($book->save()) {
@@ -162,19 +159,19 @@ class BookApiController extends Controller
 
         $model = new ImageUploadForm();
         $model->imageFile = UploadedFile::getInstanceByName('imageFile');
-        if($model->imageFile){
+        if ($model->imageFile) {
             if ($model->upload()) {
-            // unlink($book->File_Path);
-            $book->File_Path = $model->getImageUrl();
+                unlink($book->File_Path);
+                $book->File_Path = $model->getImageUrl();
 
-            }else {
-            return $this->asJson(['success' => false, 'errorMessage' => 'unable to update the data','error'=>$model->errors]);
-        }
+            } else {
+                return $this->asJson(['success' => false, 'errorMessage' => 'unable to update the data', 'error' => $model->errors]);
+            }
         }
         if ($book->validate() && $book->save()) {
-            return $this->asJson(['success' => true, 'successMessage' => 'successfully updated the data','req'=>$request->post()]);
+            return $this->asJson(['success' => true, 'successMessage' => 'successfully updated the data', 'req' => $request->post()]);
         } else {
-            return $this->asJson(['success' => false, 'errorMessage' => 'unable to update the data','error'=>$model->errors]);
+            return $this->asJson(['success' => false, 'errorMessage' => 'unable to update the data', 'error' => $model->errors]);
         }
     }
 
@@ -201,18 +198,19 @@ class BookApiController extends Controller
         return $this->asJson(['success' => true, 'data' => $categories]);
     }
 
-    public function actionChangebookstatus(){
-        $params=yii::$app->request->getBodyParams();
+    public function actionChangebookstatus()
+    {
+        $params = yii::$app->request->getBodyParams();
         $book = Books::findOne($params['id']);
-        if($book->Status==0){
-            $book->Status=1;
-        }else{
-            $book->Status=0;
+        if ($book->Status == 0) {
+            $book->Status = 1;
+        } else {
+            $book->Status = 0;
         }
-        if($book->save()){
-            return $this->asJson(['success'=>true,'successMessage'=> 'changed status to'.$book->Status,'data'=>['id'=>$params['id'],'status'=>$book->Status]]);
-        }else{
-            return $this->asJson(['success'=>false,'errorMessage'=>'unable to change status at the moment','book'=>$book]);
+        if ($book->save()) {
+            return $this->asJson(['success' => true, 'successMessage' => 'changed status to' . $book->Status, 'data' => ['id' => $params['id'], 'status' => $book->Status]]);
+        } else {
+            return $this->asJson(['success' => false, 'errorMessage' => 'unable to change status at the moment', 'book' => $book]);
         }
     }
 

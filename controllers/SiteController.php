@@ -15,10 +15,6 @@ use app\models\ContactForm;
 use app\models\bookForm;
 
 class SiteController extends Controller
-
-
-
-
 {
     /**
      * {@inheritdoc}

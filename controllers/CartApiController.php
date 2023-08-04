@@ -11,10 +11,11 @@ use yii\filters\auth\HttpBearerAuth;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 
-class CartApiController extends Controller{
+class CartApiController extends Controller
+{
     public function behaviors()
     {
-         $behaviors = parent::behaviors();
+        $behaviors = parent::behaviors();
 
         $auth = $behaviors['authenticator'];
         unset($behaviors['authenticator']);
@@ -30,7 +31,7 @@ class CartApiController extends Controller{
             'rules' => [
                 [
                     'allow' => true,
-                    'actions'=>['changequantity'],
+                    'actions' => ['changequantity'],
                     'roles' => ['user']
                 ],
             ]
@@ -39,11 +40,11 @@ class CartApiController extends Controller{
         $behaviors['verbs'] = [
             'class' => VerbFilter::class,
             'actions' => [
-                'changequantity'=>['POST']
+                'changequantity' => ['POST']
             ]
         ];
         return $behaviors;
     }
 
-    
+
 }
