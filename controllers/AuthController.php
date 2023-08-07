@@ -99,6 +99,9 @@ class AuthController extends Controller
         $params = yii::$app->request->getBodyParams();
 
         $newUser->load($request->post(), '');
+        $newUser->Address_line1=$params['Address']['AddressLine1'];
+        $newUser->Address_line2=$params['Address']['AddressLine2'];
+        $newUser->Address_line3=$params['Address']['AddressLine3'];
         $newUser->Password = yii::$app->security->generatePasswordHash($params['Password']);
         $newUser->role = 'user';
         $newUser->access_token = yii::$app->security->generateRandomString(16);
@@ -111,7 +114,8 @@ class AuthController extends Controller
             return $this->asJson([
                 'success' => false,
                 'errorMessage' => 'unable to register the user',
-                'error' => $newUser->errors
+                'error' => $newUser->errors,
+                'params'=>$params
             ]);
         }
     }

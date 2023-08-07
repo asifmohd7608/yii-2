@@ -35,9 +35,9 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
-            [['Email', 'First_Name', 'Address', 'City', 'Mobile', 'Password', 'role', 'access_token'], 'required'],
+            [['Email', 'First_Name', 'Address_line1','Address_line2','Address_line3', 'City', 'Mobile', 'Password', 'role', 'access_token'], 'required'],
             [['id', 'Mobile'], 'integer'],
-            [['Email', 'First_Name', 'Last_Name', 'Address', 'City', 'Password'], 'string'],
+            [['Email', 'First_Name', 'Last_Name','Address_line1','Address_line2','Address_line3', 'City', 'Password'], 'string'],
             [['role', 'access_token'], 'string', 'max' => 45],
             [['id'], 'unique'],
             [['Email'], 'unique', 'targetClass' => self::class, 'message' => 'This email is already registered']
@@ -55,7 +55,9 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface
                 'Email' => 'Email',
                 'First_Name' => 'First Name',
                 'Last_Name' => 'Last Name',
-                'Address' => 'Address',
+                'Address_line1' => 'Address_line1',
+                'Address_line2' => 'Address_line2',
+                'Address_line3' => 'Address_line3',
                 'City' => 'City',
                 'Mobile' => 'Mobile',
                 'Password' => 'Password',
