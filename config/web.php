@@ -88,6 +88,8 @@ $config = [
                 'api/user/cart/removecoupon' => 'user-api/removecoupon',
                 'api/user/cart/checkout' => 'user-api/checkoutcart',
                 'api/user/orders' => 'user-api/getorders',
+                'api/user/profile' => 'user-api/getuserdetails',
+                'api/user/profile/update' => 'user-api/updateuserdetails',
 
                 // -----------------coupon---------------
                 'api/coupons' => 'coupon-api/fetchcoupons',

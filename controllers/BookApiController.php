@@ -217,7 +217,7 @@ class BookApiController extends Controller
     public function actionStatus()
     {
         $userData = yii::$app->user->identity;
-        $data = ['Token' => $userData->access_token, 'Role' => $userData->role];
+        $data = ['Token' => $userData->access_token, 'Role' => $userData->role,'userName'=>$userData->First_Name];
         return $this->asJson(['success' => true, 'data' => $data]);
     }
 }

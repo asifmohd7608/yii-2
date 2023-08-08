@@ -6,6 +6,7 @@ use yii;
 use yii\db\Query;
 use app\models\Cart;
 use app\models\Books;
+use app\models\Users;
 use yii\rest\Controller;
 use app\models\Yiicoupons;
 use yii\filters\VerbFilter;
@@ -34,7 +35,7 @@ class UserApiController extends Controller
             'rules' => [
                 [
                     'allow' => true,
-                    'actions' => ['addtocart', 'sendcart', 'removeitem', 'deletecart', 'changequantity', 'applycoupon', 'removecoupon', 'checkoutcart', 'getorders'],
+                    'actions' => ['addtocart', 'sendcart', 'removeitem', 'deletecart', 'changequantity', 'applycoupon', 'removecoupon', 'checkoutcart', 'getorders','getuserdetails','updateuserdetails'],
                     'roles' => ['user']
                 ],
             ]
@@ -51,7 +52,9 @@ class UserApiController extends Controller
                 'changequantity' => ['POST'],
                 'removecoupon' => ['POST'],
                 'checkoutcart' => ['GET'],
-                'getorders' => ['GET']
+                'getorders' => ['GET'],
+                'getuserdetails'=>['GET'],
+                'updateuserdetails'=>['POST']
             ]
         ];
         return $behaviors;
@@ -317,6 +320,31 @@ class UserApiController extends Controller
             return $this->asJson(['success' => true, 'successMessage' => 'order fetch success', 'data' => $orders,'time'=>$timeZone]);
         } else {
             return $this->asJson(['success' => false, 'errorMessage' => 'no orders']);
+        }
+    }
+
+    public function actionGetuserdetails(){
+        $user=yii::$app->user->identity;
+        unset($user['Password']);
+        unset($user['role']);
+        unset($user['access_token']);
+        return $this->asJson(['success'=>true,'data'=>$user]);
+    }
+
+    public function actionUpdateuserdetails(){
+        $user=yii::$app->user->identity;
+        $request = yii::$app->getRequest();
+        $data=yii::$app->getRequest()->getBodyParams();
+        $reqUser=Users::findOne($user['id']);
+
+        $reqUser->load($request->post(),'');
+        $reqUser['Address_line1']=$data['Address']['Address_line1'];
+        $reqUser['Address_line2']=$data['Address']['Address_line2'];
+        $reqUser['Address_line3']=$data['Address']['Address_line3'];
+        if($reqUser->validate() && $reqUser->save()){
+            return $this->asJson(['success'=>true]);
+        }else{
+            return $this->asJson(['success'=>false,'errors'=>$reqUser->errors]);
         }
     }
 
