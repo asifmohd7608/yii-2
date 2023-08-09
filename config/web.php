@@ -90,6 +90,7 @@ $config = [
                 'api/user/orders' => 'user-api/getorders',
                 'api/user/profile' => 'user-api/getuserdetails',
                 'api/user/profile/update' => 'user-api/updateuserdetails',
+                'api/user/profile/changepic' => 'user-api/changeprofilepic',
 
                 // -----------------coupon---------------
                 'api/coupons' => 'coupon-api/fetchcoupons',

@@ -8,10 +8,12 @@ use app\models\Cart;
 use app\models\Books;
 use app\models\Users;
 use yii\rest\Controller;
+use yii\web\UploadedFile;
 use app\models\Yiicoupons;
 use yii\filters\VerbFilter;
 use app\models\Yiipurchases;
 use yii\filters\AccessControl;
+use app\models\ProfileImageUpload;
 use yii\filters\auth\HttpBearerAuth;
 
 class UserApiController extends Controller
@@ -35,7 +37,7 @@ class UserApiController extends Controller
             'rules' => [
                 [
                     'allow' => true,
-                    'actions' => ['addtocart', 'sendcart', 'removeitem', 'deletecart', 'changequantity', 'applycoupon', 'removecoupon', 'checkoutcart', 'getorders','getuserdetails','updateuserdetails'],
+                    'actions' => ['addtocart', 'sendcart', 'removeitem', 'deletecart', 'changequantity', 'applycoupon', 'removecoupon', 'checkoutcart', 'getorders','getuserdetails','changeprofilepic','updateuserdetails'],
                     'roles' => ['user']
                 ],
             ]
@@ -54,7 +56,8 @@ class UserApiController extends Controller
                 'checkoutcart' => ['GET'],
                 'getorders' => ['GET'],
                 'getuserdetails'=>['GET'],
-                'updateuserdetails'=>['POST']
+                'updateuserdetails'=>['POST'],
+                'changeprofilepic'=>['POST']
             ]
         ];
         return $behaviors;
@@ -333,11 +336,13 @@ class UserApiController extends Controller
 
     public function actionUpdateuserdetails(){
         $user=yii::$app->user->identity;
-        $request = yii::$app->getRequest();
         $data=yii::$app->getRequest()->getBodyParams();
         $reqUser=Users::findOne($user['id']);
 
-        $reqUser->load($request->post(),'');
+        $reqUser['First_Name']=$data['First_Name'];
+        $reqUser['Last_Name']=$data['Last_Name'];
+        $reqUser['City']=$data['City'];
+        $reqUser['Mobile']=$data['Mobile'];
         $reqUser['Address_line1']=$data['Address']['Address_line1'];
         $reqUser['Address_line2']=$data['Address']['Address_line2'];
         $reqUser['Address_line3']=$data['Address']['Address_line3'];
@@ -345,6 +350,31 @@ class UserApiController extends Controller
             return $this->asJson(['success'=>true]);
         }else{
             return $this->asJson(['success'=>false,'errors'=>$reqUser->errors]);
+        }
+    }
+
+    public function actionChangeprofilepic(){
+        $user=yii::$app->user->identity;
+        $reqUser=Users::findOne($user['id']);
+        $profilePic=new ProfileImageUpload();
+        $profilePic->imageFile=UploadedFile::getInstanceByName('imageFile');
+        $oldPic=$reqUser->Profile_Pic;
+        if($profilePic->upload()){
+            $reqUser['Profile_Pic']= $profilePic->getImageUrl();
+            if($reqUser->Profile_Pic){
+                    unlink($oldPic);
+                }
+            if($reqUser->save()){
+                $updatedUser=Users::findOne($user['id']);
+                unset($updatedUser['Password']);
+                unset($updatedUser['role']);
+                unset($updatedUser['access_token']);
+                return $this->asJson(['success'=>true,'data'=>$updatedUser]);
+            }else{
+                return $this->asJson(['success'=>false]);
+            }
+        }else{
+            return $this->asJson(['success'=>false,'error'=>$profilePic->errors]);
         }
     }
 

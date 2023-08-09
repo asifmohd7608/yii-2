@@ -37,7 +37,7 @@ class Users extends \yii\db\ActiveRecord implements IdentityInterface
         return [
             [['Email', 'First_Name', 'Address_line1','Address_line2','Address_line3', 'City', 'Mobile', 'Password', 'role', 'access_token'], 'required'],
             [['id', 'Mobile'], 'integer'],
-            [['Email', 'First_Name', 'Last_Name','Address_line1','Address_line2','Address_line3', 'City', 'Password'], 'string'],
+            [['Email', 'First_Name', 'Last_Name','Address_line1','Address_line2','Address_line3', 'City', 'Password','Profile_Pic'], 'string'],
             [['role', 'access_token'], 'string', 'max' => 45],
             [['id'], 'unique'],
             [['Email'], 'unique', 'targetClass' => self::class, 'message' => 'This email is already registered']
